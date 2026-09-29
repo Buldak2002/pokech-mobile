@@ -11,6 +11,10 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.jaehyuk.poketch",
+      "permissions": [
+        "android.permission.health.READ_STEPS"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -24,7 +28,17 @@
     },
     "plugins": [
       "expo-router",
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-video",
+      "react-native-health-connect",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 28
+          }
+        }
+      ]
     ]
   }
 }

@@ -1,35 +1,148 @@
-import { StatusBar } from 'expo-status-bar';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { router } from "expo-router"
+import { View, Text, Pressable, StyleSheet, Image} from "react-native"
+import { useEffect, useState } from "react";
+import { useVideoPlayer, VideoView } from "expo-video";
+import { useEventListener } from "expo";
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Image
-        source={require('../../assets/pokemon/showdown/front/550.gif')}
-        style={styles.pokemon}
-        resizeMode='contain'
-      />
-    </View>
-  );
+import Tutorial from "./tutorial";
+import { appStorage } from "../storage/appStorage";
+
+export default function Index() {
+
+    const [isIntroFinished, setIsIntroFinished] = useState(false);
+
+    const [isLoading, setIsLoading] = useState(true);
+    const [startButtom, setStartButtom] = useState(false);
+    const [isFirstLaunch, setIsFirstLaunch] = useState<boolean|null>(null);
+
+    // intro animation 관련 hook
+    const player = useVideoPlayer(
+        require('../../assets/animations/pokemon-intro-v2.mp4'),
+        (player) => {
+            player.loop = false,
+            player.play();
+        }
+    )
+
+    useEventListener(player, 'playToEnd', () => {
+        setIsIntroFinished(true);
+    })
+
+    // 최초 tutorial 함수 hook
+    useEffect(() => {
+        const checkFirstLaunch = async() => {
+            try {
+                const hasVisited = await appStorage.hasAlreadyLaunched();
+                setIsFirstLaunch(!hasVisited)
+            } catch {
+                console.error("저장소를 읽는 중 에러 발생");
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        checkFirstLaunch();
+    },[])
+
+    useEffect(() => {
+        if(!isLoading && isFirstLaunch === false && startButtom) {
+            router.replace('/home');
+        }
+    },[isFirstLaunch, startButtom])
+
+    // 튜토리얼 화면에 보내기 위한 함수
+    const handleTutorialComplete = async () => {
+        try {
+            await appStorage.markAsLaunched();
+            setIsFirstLaunch(false);
+        } catch {
+            console.error("저장소에 기록하는 중에 에러 발생");
+        } finally {
+            setIsFirstLaunch(false)
+        }
+    }
+
+    // 비디오 실행
+    if(!isIntroFinished) {
+        return (
+            <View style={styles.introContainer}>
+                <VideoView
+                    style={styles.introVideo}
+                    player={player}
+                    nativeControls={false}
+                    contentFit="cover"
+                />
+            </View>
+        )
+    }
+
+    //튜토리얼 실행 시 tutorial 컴포넌트로 함수 보내기
+    if(isFirstLaunch && startButtom) {
+        return (
+            <Tutorial onComplete={handleTutorialComplete}/>
+        )
+    }
+
+    //main 화면
+    return (
+        <View style={styles.container}>
+            <View>
+                <Text style={styles.tagline}>걸어서 만나는 나만의 포켓몬 세상</Text>
+                <Text>Poketch</Text>
+            </View>
+            <Image
+                style={styles.mainHero}
+                source={require('../../assets/images/pokemon-main-hero-v2.gif')}
+            />
+            <Pressable
+                style={styles.buttom}
+                onPress={() => setStartButtom(true)}
+            >
+                <Text style={styles.buttomLabel}>모험 하기</Text>
+            </Pressable>
+        </View>
+    )
 }
 
-/*
-  1. 탭바에 가방을 홈화면 위로 올리기
-  2. 원래 탭바의 가방 자리에 트레이너 정보 칸 넣기
-  3. 즐겨찾기 해둔 running 스프라이트 활용하기
-  4. 케릭터 성별 선택 가능하게 하고, user 만들기
-  5. 포켓몬 배경 리소스 활용하여 지형별 포켓몬 저장하기
-  6. 도감 탭에 필터 기능 추가하기
-*/
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff8f',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pokemon: {
-    width: 170,
-    height: 170
-  }
-});
+
+    introContainer: {
+        flex: 1,
+    },
+    introVideo: {
+        flex: 1
+    },
+
+    container: {
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 10,
+    },
+    buttom: {
+        width: 160,
+        height: 65,
+        borderRadius: 15,
+        top: 40,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#c93030",
+
+    },
+    buttomLabel: {
+        color: "white",
+        fontSize: 20,
+        fontWeight: "700",
+
+    },
+    mainHero: {
+        width: 300,
+        height: 500
+    },
+
+    tagline: {
+        color: '#5f6368',
+        fontSize: 15,
+        fontWeight: '600',
+        letterSpacing: 1.2,
+    }
+})

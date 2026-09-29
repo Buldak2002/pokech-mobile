@@ -1,10 +1,10 @@
-import { View, Text } from "react-native"
+import { View, Text } from 'react-native'
 
 export default function Market() {
     return (
         <>
         <View>
-            <Text>가방</Text>
+            <Text>상점</Text>
         </View>
         </>
     )

@@ -39,3 +39,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# local generated artifacts and notes
+/output/
+/tmp/
+/해야할 일

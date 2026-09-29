@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, FlatList, Image} from "react-native"
 
-import { POKEMON_DATA } from "../feature/pokedex/pokemon.data";
-import PokemonCard  from '../components/pokemonCard';
+import { POKEMON_DATA } from "../../feature/pokedex/pokemon.data";
+import PokemonCard  from '../../components/pokemonCard';
 
 import { useMemo, useState } from "react";
 

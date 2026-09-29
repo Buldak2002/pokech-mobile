@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import { Text, View } from 'react-native';
 
-import { POKEMON_DATA } from '../../feature/pokedex/pokemon.data';
+import { POKEMON_DATA } from '../../../feature/pokedex/pokemon.data';
 
 export default function PokemonDetail() {
   const { id } =
