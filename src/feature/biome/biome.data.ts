@@ -5,7 +5,7 @@ export const BIOMES: Biome[] = [
     id: 'grass',
     name: '초원',
     description: '풀 숲에서는 다양한 포켓몬이 나타납니다.',
-    stepGoal: 500,
+    stepGoal: 0,
     typeWeights: {
       normal: 5,
       grass: 4,
@@ -19,7 +19,7 @@ export const BIOMES: Biome[] = [
     {
     id: 'city',
     name: '도시',
-    description: '인간과 어울려 살아가는 도시와 공장의 포켓몬들이 나타납니다.',
+    description: '도시와 공장의 포켓몬들이 나타납니다.',
     stepGoal: 500,
     typeWeights: {
       normal: 5,
@@ -34,7 +34,7 @@ export const BIOMES: Biome[] = [
   {
     id: 'water',
     name: '바다',
-    description: '물 포켓몬들과 조우할 수 있습니다.',
+    description: '물에서 서식하는 포켓몬이 나타납니다.',
     stepGoal: 500,
     typeWeights: {
       water: 5,
@@ -48,7 +48,7 @@ export const BIOMES: Biome[] = [
   {
     id: 'cave',
     name: '동굴',
-    description: '어둡고 깊은 동굴을 좋아하는 포켓몬들과 조우할 수 있습니다.',
+    description: '동굴에 서식하는 포켓몬이 나타납니다.',
     stepGoal: 500,
     typeWeights: {
       rock: 5,
@@ -63,7 +63,7 @@ export const BIOMES: Biome[] = [
   {
     id: 'sand',
     name: '사막',
-    description: '습한 사막, 유적지에 포켓몬들과 조우할 수 있습니다.',
+    description: '습한 사막, 유적지에 포켓몬이 나타납니다.',
     stepGoal: 500,
     typeWeights: {
       rock: 5,
@@ -78,7 +78,7 @@ export const BIOMES: Biome[] = [
     {
     id: 'ice',
     name: '설원',
-    description: '춥고 으스스한 포켓몬들과 조우할 수 있습니다.',
+    description: '춥고 으스스한 포켓몬이 나타납니다.',
     stepGoal: 500,
     typeWeights: {
       normal: 5,

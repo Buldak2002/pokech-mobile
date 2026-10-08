@@ -29,7 +29,7 @@ export default function RootLayout() {
               styles.tabBar,
               {
                 bottom: Math.max(insets.bottom, 50),
-                marginHorizontal: 16,
+                marginHorizontal: 28,
               }
             ],
             tabBarLabelStyle: styles.tabBarLabel,
@@ -109,7 +109,7 @@ export default function RootLayout() {
               title: '가방',
               tabBarIcon: ({ focused }) => (
                 <Image
-                  source={require('../../../assets/items/backpag.png')}
+                  source={require('../../../assets/items/backpag.webp')}
                   style={[
                     icons.tabIcons,
                     {

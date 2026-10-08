@@ -1,17 +1,31 @@
-import { View, Text, StyleSheet, FlatList, Image} from "react-native"
+import { View, Text, StyleSheet, FlatList } from "react-native"
 
 import { POKEMON_DATA } from "../../feature/pokedex/pokemon.data";
 import PokemonCard  from '../../components/pokemonCard';
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { appStorage } from "../../storage/appStorage";
+import { OwnedPokemon } from "../../feature/user/user.type";
 
 export default function Pokedex() {
+  const [collectedPokemon, setCollectedPokemon] = useState<OwnedPokemon[]>([]);
 
-  const [collectedIds, setCollectedIds] = useState<number[]>([1, 2, 3, 4, 5, 6]);
+  useEffect(() => {
+    const loadPokemon = async () => {
+      const gameSave = await appStorage.loadGame();
+        
+      if(!gameSave) {
+          throw new Error("게임 저장 데이터를 찾을 수 없습니다.")
+      }
+
+      setCollectedPokemon(gameSave.user.ownedPokemon)
+    }
+    void loadPokemon();
+  },[])
 
   const collectedSet = useMemo(
-    () => new Set(collectedIds),
-    [collectedIds]
+    () => new Set(collectedPokemon.map(pokemon => pokemon.speciesId)),
+    [collectedPokemon]
   )
 
   return (
@@ -24,7 +38,7 @@ export default function Pokedex() {
             numColumns={3}
             contentContainerStyle={styles.listContent}
             keyExtractor={(item) => String(item.id)}
-            extraData={collectedIds}
+            extraData={collectedPokemon}
             renderItem={({ item }) => (
               <PokemonCard
                 pokemon={item}

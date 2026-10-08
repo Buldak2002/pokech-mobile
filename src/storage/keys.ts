@@ -1,4 +1,3 @@
 export const STORAGE_KEYS = {
-  ALREADY_LAUNCHED: "@poketch/alreadyLaunched",
-  USER_SETTINGS: "@poketch/userSettings",
+  GAME_SAVE: "@poketch/gameSave",
 } as const;

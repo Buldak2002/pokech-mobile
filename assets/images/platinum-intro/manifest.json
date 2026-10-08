@@ -1,0 +1,24 @@
+{
+  "format": "APNG",
+  "note": "Animated PNG files intentionally use the .png extension for Metro static asset imports.",
+  "animations": {
+    "dawnRun": {
+      "frameWidth": 64,
+      "frameHeight": 132,
+      "frameCount": 4,
+      "frameDurationMs": 200
+    },
+    "lucasRun": {
+      "frameWidth": 64,
+      "frameHeight": 124,
+      "frameCount": 4,
+      "frameDurationMs": 200
+    },
+    "profRowanIdle": {
+      "frameWidth": 76,
+      "frameHeight": 132,
+      "frameCount": 4,
+      "frameDurationMs": 650
+    }
+  }
+}

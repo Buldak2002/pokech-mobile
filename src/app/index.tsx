@@ -6,6 +6,7 @@ import { useEventListener } from "expo";
 
 import Tutorial from "./tutorial";
 import { appStorage } from "../storage/appStorage";
+import type { GameSave, User } from "../feature/user/user.type";
 
 export default function Index() {
 
@@ -19,7 +20,7 @@ export default function Index() {
     const player = useVideoPlayer(
         require('../../assets/animations/pokemon-intro-v2.mp4'),
         (player) => {
-            player.loop = false,
+            player.loop = false;
             player.play();
         }
     )
@@ -32,10 +33,13 @@ export default function Index() {
     useEffect(() => {
         const checkFirstLaunch = async() => {
             try {
-                const hasVisited = await appStorage.hasAlreadyLaunched();
-                setIsFirstLaunch(!hasVisited)
+                const savedGame = await appStorage.loadGame();
+                setIsFirstLaunch(
+                    savedGame?.tutorialCompleted !== true,
+                );
             } catch {
                 console.error("저장소를 읽는 중 에러 발생");
+                setIsFirstLaunch(true);
             } finally {
                 setIsLoading(false)
             }
@@ -47,20 +51,20 @@ export default function Index() {
         if(!isLoading && isFirstLaunch === false && startButtom) {
             router.replace('/home');
         }
-    },[isFirstLaunch, startButtom])
+    },[isLoading, isFirstLaunch, startButtom])
 
     // 튜토리얼 화면에 보내기 위한 함수
-    const handleTutorialComplete = async () => {
-        try {
-            await appStorage.markAsLaunched();
-            setIsFirstLaunch(false);
-        } catch {
-            console.error("저장소에 기록하는 중에 에러 발생");
-        } finally {
-            setIsFirstLaunch(false)
-        }
-    }
+    const handleTutorialComplete = async (user: User): Promise<void> => {
+        const gameSave: GameSave = {
+            schemaVersion: 1,
+            tutorialCompleted: true,
+            user,
+        };
 
+        await appStorage.saveGame(gameSave);
+
+        setIsFirstLaunch(false);
+    };
     // 비디오 실행
     if(!isIntroFinished) {
         return (
@@ -73,6 +77,14 @@ export default function Index() {
                 />
             </View>
         )
+    }
+
+    if (isLoading) {
+        return (
+            <View style={styles.container}>
+                <Text>저장 데이터를 확인하는 중...</Text>
+            </View>
+        );
     }
 
     //튜토리얼 실행 시 tutorial 컴포넌트로 함수 보내기

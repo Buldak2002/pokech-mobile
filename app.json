@@ -38,7 +38,8 @@
             "minSdkVersion": 28
           }
         }
-      ]
+      ],
+      "expo-image"
     ]
   }
 }
