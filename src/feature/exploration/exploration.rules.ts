@@ -1,6 +1,7 @@
-import type { Biome } from '../biome/biome.type';
+import type { Biome, BiomeId } from '../biome/biome.type';
 
 import type {
+  ExplorationsByBiome,
   ExplorationSession,
   ExplorationStepSnapshot,
 } from './exploration.type';
@@ -15,10 +16,12 @@ function normalizeSteps(steps: number): number {
 
 export function startExploration(
   biome: Biome,
+  travelPokemonId: string,
   startedAt: Date = new Date(),
 ): ExplorationSession {
   return {
     biomeId: biome.id,
+    travelPokemonId,
     stepGoal: biome.stepGoal,
     startedAt: startedAt.toISOString(),
     progressSteps: 0,
@@ -55,7 +58,7 @@ export function updateExplorationProgress(
     calculateExplorationProgress(snapshot);
 
   const progressSteps = Math.min(
-    calculatedProgress,
+    Math.max(session.progressSteps, calculatedProgress),
     session.stepGoal,
   );
 
@@ -67,4 +70,36 @@ export function updateExplorationProgress(
         ? 'ready'
         : 'searching',
   };
+}
+
+export function assignExploration(
+  explorations: ExplorationsByBiome,
+  session: ExplorationSession,
+): ExplorationsByBiome {
+  return {
+    ...explorations,
+    [session.biomeId]: session,
+  };
+}
+
+export function removeExploration(
+  explorations: ExplorationsByBiome,
+  biomeId: BiomeId,
+): ExplorationsByBiome {
+  const next = {
+    ...explorations,
+  };
+
+  delete next[biomeId];
+  return next;
+}
+
+export function isPokemonExploring(
+  explorations: ExplorationsByBiome,
+  pokemonId: string,
+): boolean {
+  return Object.values(explorations).some(
+    session =>
+      session?.travelPokemonId === pokemonId,
+  );
 }

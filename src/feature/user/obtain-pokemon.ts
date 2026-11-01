@@ -7,6 +7,7 @@ import type {
 type ObtainPokemonParams = {
   user: User;
   speciesId: OwnedPokemon["speciesId"];
+  level?: number;
 };
 
 type ObtainPokemonResult = {
@@ -18,37 +19,15 @@ type ObtainPokemonResult = {
 export function obtainPokemon({
   user,
   speciesId,
+  level
 }: ObtainPokemonParams): ObtainPokemonResult {
-  const existingPokemon = user.ownedPokemon.find(
-    (pokemon) => pokemon.speciesId === speciesId,
+  const isNew = !user.registeredPokemonIds.includes(
+    speciesId,
   );
-
-  if (existingPokemon) {
-    const leveledUpPokemon: OwnedPokemon = {
-      ...existingPokemon,
-      level: existingPokemon.level + 1,
-    };
-
-    const nextOwnedPokemon =
-      user.ownedPokemon.map((pokemon) =>
-        pokemon.instanceId ===
-        existingPokemon.instanceId
-          ? leveledUpPokemon
-          : pokemon,
-      );
-
-    return {
-      user: {
-        ...user,
-        ownedPokemon: nextOwnedPokemon,
-      },
-      pokemon: leveledUpPokemon,
-      isNew: false,
-    };
-  }
 
   const newPokemon = createOwnedPokemon({
     speciesId,
+    level,
   });
 
   return {
@@ -58,8 +37,11 @@ export function obtainPokemon({
         ...user.ownedPokemon,
         newPokemon,
       ],
+      registeredPokemonIds: isNew
+        ? [...user.registeredPokemonIds, speciesId]
+        : user.registeredPokemonIds,
     },
     pokemon: newPokemon,
-    isNew: true,
+    isNew,
   };
 }

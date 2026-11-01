@@ -16,7 +16,7 @@ const PokemonCard = memo(function PokemonCard({
     <Pressable 
         style={styles.card}
         onPress={() => router.push({
-            pathname: '/pokemon/[id]',
+            pathname: '/backpack/pokemon/[id]',
             params: {
                 id: String(pokemon.id),
             }

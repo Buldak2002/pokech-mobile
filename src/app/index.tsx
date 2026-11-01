@@ -1,14 +1,28 @@
 import { router } from "expo-router"
-import { View, Text, Pressable, StyleSheet, Image} from "react-native"
+import {
+    View,
+    Text,
+    Pressable,
+    StyleSheet,
+    Image,
+    useWindowDimensions,
+} from "react-native"
 import { useEffect, useState } from "react";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useEventListener } from "expo";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import Tutorial from "./tutorial";
 import { appStorage } from "../storage/appStorage";
 import type { GameSave, User } from "../feature/user/user.type";
 
 export default function Index() {
+
+    const { width, height } = useWindowDimensions();
+    const logoHeight = Math.min(165, height * 0.18);
+    const logoWidth = Math.min(width - 24, logoHeight * 2);
+    const heroHeight = Math.min(660, height * 0.6, (width - 8) / 0.6);
+    const heroWidth = heroHeight * 0.6;
 
     const [isIntroFinished, setIsIntroFinished] = useState(false);
 
@@ -56,9 +70,10 @@ export default function Index() {
     // 튜토리얼 화면에 보내기 위한 함수
     const handleTutorialComplete = async (user: User): Promise<void> => {
         const gameSave: GameSave = {
-            schemaVersion: 1,
+            schemaVersion: 2,
             tutorialCompleted: true,
             user,
+            explorations: {}
         };
 
         await appStorage.saveGame(gameSave);
@@ -96,26 +111,48 @@ export default function Index() {
 
     //main 화면
     return (
-        <View style={styles.container}>
-            <View>
-                <Text style={styles.tagline}>걸어서 만나는 나만의 포켓몬 세상</Text>
-                <Text>Poketch</Text>
+        <SafeAreaView
+            edges={['top', 'bottom', 'left', 'right']}
+            style={styles.safeArea}
+        >
+            <View style={styles.container}>
+                <View style={styles.brandBlock}>
+                    <Text style={styles.tagline}>걸어서 만나는 나만의 포켓몬 세상</Text>
+                    <Image
+                        resizeMode="contain"
+                        source={require('../../assets/images/poketch-logo.png')}
+                        style={{ width: logoWidth, height: logoHeight }}
+                    />
+                </View>
+                <Pressable
+                    accessibilityHint="모험을 시작합니다"
+                    accessibilityLabel="포켓몬 무리를 눌러서 시작"
+                    accessibilityRole="button"
+                    onPress={() => setStartButtom(true)}
+                    style={({ pressed }) => [
+                        styles.heroButton,
+                        { width: heroWidth, height: heroHeight + 36 },
+                        pressed && styles.heroButtonPressed,
+                    ]}
+                >
+                    <Text style={styles.startLabel}>포켓몬을 눌러서 시작!</Text>
+                    <Image
+                        resizeMode="contain"
+                        source={require('../../assets/images/pokemon-main-hero-v2.gif')}
+                        style={{ width: heroWidth, height: heroHeight }}
+                    />
+                </Pressable>
             </View>
-            <Image
-                style={styles.mainHero}
-                source={require('../../assets/images/pokemon-main-hero-v2.gif')}
-            />
-            <Pressable
-                style={styles.buttom}
-                onPress={() => setStartButtom(true)}
-            >
-                <Text style={styles.buttomLabel}>모험 하기</Text>
-            </Pressable>
-        </View>
+        </SafeAreaView>
     )
 }
 
 const styles = StyleSheet.create({
+
+    safeArea: {
+        flex: 1,
+        backgroundColor: '#ffffff',
+    },
 
     introContainer: {
         flex: 1,
@@ -126,35 +163,38 @@ const styles = StyleSheet.create({
 
     container: {
         flex: 1,
+        overflow: "hidden",
         alignItems: "center",
-        justifyContent: "center",
-        gap: 10,
+        paddingHorizontal: 4,
+        paddingTop: 34,
+        paddingBottom: 8,
     },
-    buttom: {
-        width: 160,
-        height: 65,
-        borderRadius: 15,
-        top: 40,
+    brandBlock: {
         alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#c93030",
-
     },
-    buttomLabel: {
-        color: "white",
-        fontSize: 20,
-        fontWeight: "700",
-
+    heroButton: {
+        alignItems: "center",
+        justifyContent: "flex-start",
+        marginTop: -4,
     },
-    mainHero: {
-        width: 300,
-        height: 500
+    heroButtonPressed: {
+        opacity: 0.82,
+        transform: [{ scale: 0.98 }],
     },
-
+    startLabel: {
+        marginTop: 20,
+        color: '#3f5368',
+        fontSize: 16,
+        fontWeight: '800',
+        letterSpacing: 0.6,
+        opacity: 0.7,
+    },
     tagline: {
         color: '#5f6368',
-        fontSize: 15,
+        fontSize: 17,
         fontWeight: '600',
+        lineHeight: 23,
         letterSpacing: 1.2,
+        textAlign: 'center',
     }
 })

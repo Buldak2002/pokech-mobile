@@ -1,11 +1,20 @@
 import { Text, View, StyleSheet, Pressable, TextInput } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Image as ExpoImage, ImageBackground } from "expo-image";
+import Animated, {
+    Easing,
+    useAnimatedStyle,
+    useReducedMotion,
+    useSharedValue,
+    withSequence,
+    withTiming,
+} from "react-native-reanimated";
 
 import { dialogueSteps, type DialogueCharacter } from "../feature/user/dialogueSteps"
 import { CharacterSelection } from "../components/choice-gender";
 import { RegionSelection } from "../components/choice-region"
+import { DialogueBox } from "../components/dialogue-box";
 import type { UserGender, User } from "../feature/user/user.type";
 import type { Pokemon } from "../feature/pokedex/pokemon.type";
 
@@ -30,6 +39,89 @@ const characterImages: Record<DialogueCharacter, number> = {
     "../../assets/images/platinum-intro/lucas-run.png"
   ),
 };
+
+const pokeBallImage = require("../../assets/items/poke-ball.png")
+
+const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
+const EASE_IN_OUT = Easing.bezier(0.77, 0, 0.175, 1);
+
+function PokeBallReward() {
+    const reducedMotion = useReducedMotion();
+    const rotation = useSharedValue(0);
+    const ballScale = useSharedValue(0.95);
+    const sparkleOpacity = useSharedValue(0);
+    const sparkleScale = useSharedValue(0.8);
+
+    useEffect(() => {
+        sparkleOpacity.set(
+            withSequence(
+                withTiming(1, { duration: 160, easing: EASE_OUT }),
+                withTiming(0, { duration: 360, easing: EASE_OUT }),
+            ),
+        );
+
+        if (reducedMotion) {
+            ballScale.set(1);
+            return;
+        }
+
+        rotation.set(
+            withSequence(
+                withTiming(-10, { duration: 90, easing: EASE_IN_OUT }),
+                withTiming(10, { duration: 90, easing: EASE_IN_OUT }),
+                withTiming(-7, { duration: 80, easing: EASE_IN_OUT }),
+                withTiming(7, { duration: 80, easing: EASE_IN_OUT }),
+                withTiming(0, { duration: 120, easing: EASE_OUT }),
+            ),
+        );
+        ballScale.set(
+            withSequence(
+                withTiming(1.1, { duration: 180, easing: EASE_OUT }),
+                withTiming(1, { duration: 220, easing: EASE_OUT }),
+            ),
+        );
+        sparkleScale.set(
+            withSequence(
+                withTiming(1.25, { duration: 180, easing: EASE_OUT }),
+                withTiming(1, { duration: 260, easing: EASE_OUT }),
+            ),
+        );
+    }, [ballScale, reducedMotion, rotation, sparkleOpacity, sparkleScale]);
+
+    const ballAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [
+            { rotate: `${rotation.get()}deg` },
+            { scale: ballScale.get() },
+        ],
+    }));
+
+    const sparkleAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: sparkleOpacity.get(),
+        transform: [{ scale: sparkleScale.get() }],
+    }));
+
+    return (
+        <View style={styles.pokeBallReward}>
+            <Animated.Text
+                style={[styles.sparkle, styles.leftSparkle, sparkleAnimatedStyle]}
+            >
+                ✦
+            </Animated.Text>
+            <Animated.View style={ballAnimatedStyle}>
+                <ExpoImage
+                    source={pokeBallImage}
+                    contentFit="contain"
+                    style={styles.pokeBall}
+                />
+            </Animated.View>
+            <Animated.Text
+                style={[styles.sparkle, styles.rightSparkle, sparkleAnimatedStyle]}
+            >
+                ✦
+            </Animated.Text>
+        </View>
+    );
+}
 
 
 export default function Tutorial({ onComplete }: TutorialProps) {
@@ -67,6 +159,10 @@ export default function Tutorial({ onComplete }: TutorialProps) {
         starterPokemon,
         ],
 
+        registeredPokemonIds: [
+            starterPokemon.speciesId,
+        ],
+
         party: [
         starterPokemon.instanceId,
         null,
@@ -75,6 +171,19 @@ export default function Tutorial({ onComplete }: TutorialProps) {
         null,
         null,
         ],
+
+        ownedItems: [
+            {
+                itemId: "poke-ball",
+                quantity: 10,
+            },
+        ],
+
+        energy: 0,
+        stepEnergy: {
+            dateKey: '',
+            convertedSteps: 0,
+        },
     };
 
     try {
@@ -171,26 +280,32 @@ export default function Tutorial({ onComplete }: TutorialProps) {
                 />
             )}
 
-            <Pressable
-                onPress={handleDialoguePress}
-                style={talks.textBox}
-            >
-                <Text style={talks.speaker}>
-                {currentStep.speaker}
-                </Text>
-
-                {currentStep.showUsername ?
-                    <Text style={talks.message}>{`${username} 멋진 이름이구나!`}</Text> :
-                    <Text style={talks.message}>{currentStep.message}</Text>
+            <DialogueBox
+                dialogueId={stepIndex}
+                speaker={currentStep.speaker}
+                message={
+                    currentStep.showUsername
+                        ? `${username} 멋진 이름이구나!`
+                        : currentStep.message
                 }
-
-                <Text style={talks.nextIndicator}>▼</Text>
-            </Pressable>
+                onNext={handleDialoguePress}
+            />
             </>
         );
         case "favortie-region":
             return (
                 <RegionSelection onSelect={handleRegionPokemonSelect}/>
+            )
+        case "give-poke-ball":
+            return (
+                <>
+                    <PokeBallReward />
+                    <DialogueBox
+                        dialogueId={stepIndex}
+                        message="몬스터볼 10개를 받았다!"
+                        onNext={handleDialoguePress}
+                    />
+                </>
             )
     }
     };
@@ -307,55 +422,33 @@ const styles = StyleSheet.create({
         width: 160,
         height: 264,
     },
+    pokeBallReward: {
+        width: 200,
+        height: 150,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    pokeBall: {
+        width: 120,
+        height: 120,
+    },
+    sparkle: {
+        position: "absolute",
+        color: "#fff3a3",
+        fontSize: 32,
+        fontWeight: "900",
+    },
+    leftSparkle: {
+        left: 8,
+        top: 48,
+    },
+    rightSparkle: {
+        right: 8,
+        top: 24,
+    },
 })
 
 const talks = StyleSheet.create({
-  textBox: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 28,
-
-    height: 180,
-    paddingHorizontal: 20,
-    paddingVertical: 18,
-
-    backgroundColor: "rgba(255, 255, 238, 0.96)",
-    borderWidth: 4,
-    borderColor: "#5B563F",
-    borderRadius: 14,
-    borderCurve: "continuous",
-
-    boxShadow: "0 5px 0 rgba(65, 61, 43, 0.35)",
-  },
-
-  speaker: {
-    marginBottom: 10,
-
-    color: "#8A7021",
-    fontSize: 17,
-    fontWeight: "800",
-  },
-
-  message: {
-    paddingRight: 20,
-
-    color: "#28261D",
-    fontSize: 18,
-    fontWeight: "600",
-    lineHeight: 28,
-  },
-
-  nextIndicator: {
-    position: "absolute",
-    right: 16,
-    bottom: 12,
-
-    color: "#8A7021",
-    fontSize: 16,
-    fontWeight: "900",
-  },
-
   nameInputContainer: {
     width: "88%",
     alignItems: "center",

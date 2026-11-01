@@ -18,8 +18,10 @@ export type Biome = {
   name: string;
   description: string;
   stepGoal: number;
+  typeNames: PokemonType[];
   typeWeights: Partial<Record<PokemonType, number>>;
   background: ImageSourcePropType;
+  cardBackground: ImageSourcePropType;
   includePokemonIds: number[];
   excludePokemonIds: number[];
 };

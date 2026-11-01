@@ -5,7 +5,7 @@
     "scheme": "poketch",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/poketch-app-icon.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
@@ -13,14 +13,10 @@
     "android": {
       "package": "com.jaehyuk.poketch",
       "permissions": [
+        "android.permission.health.READ_STEPS",
         "android.permission.health.READ_STEPS"
       ],
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      },
+      "icon": "./assets/poketch-app-icon.png",
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -39,7 +35,27 @@
           }
         }
       ],
-      "expo-image"
-    ]
+      "expo-image",
+      "./plugins/with-local-signing"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "658bba76-eb7d-449b-86cc-c9a98aa014d2"
+      }
+    },
+    "owner": "j2h2002",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/658bba76-eb7d-449b-86cc-c9a98aa014d2",
+      "requestHeaders": {
+        "expo-channel-name": "preview"
+      },
+      "assetPatternsToBeBundled": [
+        "assets/ota/**/*"
+      ]
+    }
   }
 }

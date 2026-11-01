@@ -15,6 +15,7 @@
     "expo-router": "~57.0.24",
     "expo-sensors": "~57.0.3",
     "expo-status-bar": "~57.0.1",
+    "expo-updates": "~57.0.26",
     "expo-video": "~57.0.5",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -33,6 +34,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "signing:setup": "node scripts/setup-local-signing.mjs",
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",

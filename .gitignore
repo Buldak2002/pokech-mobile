@@ -13,6 +13,8 @@ expo-env.d.ts
 .kotlin/
 *.orig.*
 *.jks
+*.keystore
+/.local-signing/
 *.p8
 *.p12
 *.key
@@ -44,3 +46,8 @@ yarn-error.*
 /output/
 /tmp/
 /해야할 일
+
+*.apk
+*.aab
+/release-build.log
+/credentials.json

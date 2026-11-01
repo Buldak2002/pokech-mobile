@@ -20,6 +20,8 @@ import {
 import { Pedometer } from 'expo-sensors';
 
 export function useHealthSteps() {
+  const [stepsReady, setStepsReady] =
+    useState(false);
   const [healthSteps, setHealthSteps] = useState(0);
   const [sensorSteps, setSensorSteps] = useState(0);
   const [healthBaseline, setHealthBaseline] =
@@ -121,6 +123,8 @@ export function useHealthSteps() {
   }, [healthConnected]);
 
   const refreshSteps = useCallback(async () => {
+    setStepsReady(false);
+
     try {
       const currentAvailability =
         await getHealthConnectAvailability();
@@ -162,6 +166,8 @@ export function useHealthSteps() {
       console.log('오늘 걸음 수:', todaySteps);
     } catch (error) {
       console.error('걸음 수 불러오기 실패:', error);
+    } finally {
+      setStepsReady(true);
     }
   }, []);
 
@@ -287,6 +293,7 @@ export function useHealthSteps() {
 
   return {
     steps,
+    stepsReady,
     healthConnected,
     availability,
     refreshSteps,

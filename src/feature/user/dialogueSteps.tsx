@@ -1,4 +1,4 @@
-export type DialogueCharacter = "rowan" | "dawn" | "lucas";
+export type DialogueCharacter = "rowan" | "dawn" | "lucas" ;
 
 export type TutorialStep =
   | {
@@ -16,6 +16,10 @@ export type TutorialStep =
     }
   | {
       type: "favortie-region"
+    }
+  |
+    {
+      type: "give-poke-ball" 
     }
 
 export const dialogueSteps: TutorialStep[] = [
@@ -68,7 +72,22 @@ export const dialogueSteps: TutorialStep[] = [
   {
     type: "dialogue",
     speaker: "마박사",
-    message: "좋은 선택이구나! 이제 모험을 시작해보렴",
+    message: "좋은 선택이구나!",
     character: "rowan",
-  }
+  },
+  {
+    type: "dialogue",
+    speaker: "마박사",
+    message: "첫 스타팅 포켓몬을 받은 기념으로, 몬스터볼 10개를 선물로 주겠다.",
+    character: "rowan",
+  },
+  {
+    type: "give-poke-ball", 
+  },
+  {
+    type: "dialogue",
+    speaker: "마박사",
+    message: "자 이제 포켓몬을 잡으며, 동료들과 강해지거라!",
+    character: "rowan",
+  },
 ];

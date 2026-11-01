@@ -38,6 +38,25 @@ export function getEvolutionCaptureMultiplier(
   ];
 }
 
+export function isCaptureSuccessful(
+  pokemon: Pokemon,
+  ballMultiplier: number,
+  random: () => number = Math.random,
+): boolean {
+  if (!Number.isFinite(ballMultiplier)) {
+    return true;
+  }
+
+  const probability = Math.min(
+    1,
+    (pokemon.captureRate / 255) *
+      getEvolutionCaptureMultiplier(pokemon) *
+      Math.max(0, ballMultiplier),
+  );
+
+  return random() < probability;
+}
+
 export function createFleeWeight(
   random: () => number = Math.random,
 ): FleeWeight {

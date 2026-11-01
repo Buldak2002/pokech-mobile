@@ -6,6 +6,9 @@ export type ExplorationStatus =
 
 export type ExplorationSession = {
   biomeId: BiomeId;
+
+  travelPokemonId: string,
+
   stepGoal: number;
   startedAt: string;
   progressSteps: number;
@@ -17,3 +20,6 @@ export type ExplorationStepSnapshot = {
   syncedStepsAtLiveStart: number;
   liveStepsSinceLiveStart: number;
 };
+
+export type ExplorationsByBiome =
+  Partial<Record<BiomeId, ExplorationSession>>;

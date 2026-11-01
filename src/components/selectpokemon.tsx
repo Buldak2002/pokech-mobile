@@ -10,7 +10,11 @@ import { POKEMON_GEN5_IMAGES } from "../feature/pokedex/pokemonGen5Images";
 type SelectPokemonProps = {
   isPresented: boolean;
   onDismiss: () => void;
-  find: () => void;
+  assignedPokemonIds: PokemonInstanceId[];
+
+  onConfirm: (
+    pokemonId: PokemonInstanceId,
+  ) => void | Promise<void>
 };
 
 // storage에서 불러와서 엔트리 포켓몬 배치
@@ -21,7 +25,12 @@ type SelectPokemonProps = {
 // 몬스터볼 다 떨어지면 알아서 배틀 종료
 // 상점에서 살 수 있게 해야함
 
-export function SelectPokemon({ isPresented, onDismiss, find }: SelectPokemonProps) {
+export function SelectPokemon({
+  isPresented,
+  onDismiss,
+  assignedPokemonIds,
+  onConfirm,
+}: SelectPokemonProps) {
 
   const [entryPokemon, setEntryPokemon] = useState<(OwnedPokemon | null)[]>([])
   const [selectedPokemonId, setSelectedPokemonId] = useState<PokemonInstanceId | null>(null);
@@ -38,6 +47,8 @@ export function SelectPokemon({ isPresented, onDismiss, find }: SelectPokemonPro
         Alert.alert("게임 저장 데이터를 찾을 수 없습니다.");
         return;
       }
+
+      setSelectedPokemonId(null);
 
       const hasPartyPokemon = gameSave.user.party.some(
         instanceId => instanceId !== null,
@@ -106,35 +117,59 @@ export function SelectPokemon({ isPresented, onDismiss, find }: SelectPokemonPro
     >
       <RNHostView>
         <View style={styles.sheetContent}>
+          <View style={styles.pokemonBox}>
+            <Text style={styles.pokemonText}>포켓몬</Text>
+            <Text style={styles.message}>포획에 함께할 포켓몬을 고르자!</Text>
+          </View>
           <View style={styles.entryGrid}>
             {
               entryPokemon.map((pokemon, index) => {
+
+                const isAssiged = pokemon
+                  ? assignedPokemonIds.includes(
+                    pokemon.instanceId
+                    )
+                  : false;
                 
                 const isSelected = pokemon?.instanceId === selectedPokemonId;
 
                 return(
                 <Pressable 
                   key={index}
-                  disabled={!pokemon}
-                  onPress={(() => {
-                    if(!pokemon) return; console.log("선택한 포켓몬:", pokemon)
-                      setSelectedPokemonId(pokemon.instanceId)
-                  })}
+                  disabled={!pokemon || isAssiged}
+                  onPress={() => {
+                    if (!pokemon || isAssiged) return;
+                    setSelectedPokemonId(pokemon.instanceId);
+                  }}
                   style={({pressed}) => [
                     styles.entryBox,
                     isSelected && styles.selectedEntryBox,
-                    pressed && styles.pressedEntryBox
+                    isAssiged && styles.assignedEntryBox,
+                    pressed && 
+                      !isAssiged &&
+                        styles.pressedEntryBox
                   ]}
                 >
                   {matchImage(pokemon)}
+                  {isAssiged && (
+                    <Text style={styles.assignedText}>탐험 중</Text>
+                  )} 
                 </Pressable>
               )})
             }
           </View>
 
           <Pressable
-            style={styles.button}
-            onPress={find}
+            disabled={!selectedPokemonId}
+            style={({ pressed }) => [
+              styles.button,
+              !selectedPokemonId && styles.disabledButton,
+              pressed && selectedPokemonId && styles.pressedButton,
+            ]}
+            onPress={() => {
+              if (!selectedPokemonId) return;
+              void onConfirm(selectedPokemonId);
+            }}
           >
             <Text style={styles.buttonText}>선택 완료!</Text>
           </Pressable>
@@ -147,8 +182,25 @@ export function SelectPokemon({ isPresented, onDismiss, find }: SelectPokemonPro
 const styles = StyleSheet.create({
   sheetContent: {
     width: '100%',
-    gap: 20,
+    gap: 30,
     paddingVertical: 16,
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  pokemonText: {
+    fontSize: 30,
+    fontWeight: "700"
+  },
+  message: {
+    fontSize: 15,
+    fontWeight: "700",
+    opacity: 0.6
+  },
+  pokemonBox: {
+    bottom: 20,
+    alignItems: 'center',
+    gap: 7
   },
   entryGrid: {
     width: '100%',
@@ -201,5 +253,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-  }
+  },
+  assignedEntryBox: {
+    opacity: 0.45,
+  },
+
+  assignedText: {
+    marginTop: 6,
+    color: '#64748b',
+    fontSize: 13,
+    fontWeight: '800',
+  },
 })

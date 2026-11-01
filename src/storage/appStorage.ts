@@ -1,7 +1,40 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import type { GameSave } from "../feature/user/user.type";
+import type {
+  GameSave,
+  PokemonSpeciesId,
+  User,
+} from "../feature/user/user.type";
 import { STORAGE_KEYS } from "./keys";
+
+type StoredUser = Omit<User, 'registeredPokemonIds'> & {
+  registeredPokemonIds?: PokemonSpeciesId[];
+};
+
+type StoredGameSave = Omit<GameSave, 'schemaVersion' | 'user'> & {
+  schemaVersion?: number;
+  user: StoredUser;
+};
+
+function migrateGameSave(storedGame: StoredGameSave): GameSave {
+  const registeredPokemonIds = [
+    ...new Set([
+      ...(storedGame.user.registeredPokemonIds ?? []),
+      ...storedGame.user.ownedPokemon.map(
+        pokemon => pokemon.speciesId,
+      ),
+    ]),
+  ];
+
+  return {
+    ...storedGame,
+    schemaVersion: 2,
+    user: {
+      ...storedGame.user,
+      registeredPokemonIds,
+    },
+  };
+}
 
 export const appStorage = {
   async saveGame(gameSave: GameSave): Promise<void> {
@@ -21,7 +54,8 @@ export const appStorage = {
     }
 
     try {
-      return JSON.parse(savedValue) as GameSave;
+      const storedGame = JSON.parse(savedValue) as StoredGameSave;
+      return migrateGameSave(storedGame);
     } catch {
       return null;
     }

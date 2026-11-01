@@ -10,6 +10,7 @@ import {
 import {
   type ImageStyle,
   Platform,
+  StyleSheet,
   Text,
   type TextStyle,
   View,
@@ -61,7 +62,8 @@ export const TrainerThrowAnimation = forwardRef<
   const operationRef = useRef(0);
   const pendingNativePlayRef = useRef<number | null>(null);
   const [revision, setRevision] = useState(0);
-  const [webIsPlaying, setWebIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isGifVisible, setIsGifVisible] = useState(false);
   const assets = TRAINER_ASSETS[character];
 
   const remountAfterNativeStop = useCallback(
@@ -76,6 +78,7 @@ export const TrainerThrowAnimation = forwardRef<
           }
 
           pendingNativePlayRef.current = shouldPlay ? operation : null;
+          setIsPlaying(shouldPlay);
           setRevision((value) => value + 1);
         });
     },
@@ -85,9 +88,10 @@ export const TrainerThrowAnimation = forwardRef<
   const play = useCallback(() => {
     const operation = operationRef.current + 1;
     operationRef.current = operation;
+    setIsGifVisible(false);
 
     if (Platform.OS === 'web') {
-      setWebIsPlaying(true);
+      setIsPlaying(true);
       setRevision((value) => value + 1);
       return;
     }
@@ -98,29 +102,16 @@ export const TrainerThrowAnimation = forwardRef<
   const stop = useCallback(() => {
     operationRef.current += 1;
     pendingNativePlayRef.current = null;
-
-    if (Platform.OS === 'web') {
-      setWebIsPlaying(false);
-      setRevision((value) => value + 1);
-      return;
+    setIsGifVisible(false);
+    setIsPlaying(false);
+    if (Platform.OS !== 'web') {
+      void imageRef.current?.stopAnimating().catch(() => undefined);
     }
-
-    void imageRef.current?.stopAnimating().catch(() => undefined);
   }, []);
 
   const reset = useCallback(() => {
-    const operation = operationRef.current + 1;
-    operationRef.current = operation;
-    pendingNativePlayRef.current = null;
-
-    if (Platform.OS === 'web') {
-      setWebIsPlaying(false);
-      setRevision((value) => value + 1);
-      return;
-    }
-
-    remountAfterNativeStop(operation, false);
-  }, [remountAfterNativeStop]);
+    stop();
+  }, [stop]);
 
   useImperativeHandle(
     forwardedRef,
@@ -129,35 +120,51 @@ export const TrainerThrowAnimation = forwardRef<
   );
 
   const handleLoad = useCallback(() => {
-    if (Platform.OS === 'web' || pendingNativePlayRef.current === null) {
+    if (Platform.OS === 'web') {
+      setIsGifVisible(true);
+      return;
+    }
+
+    if (pendingNativePlayRef.current === null) {
       return;
     }
 
     pendingNativePlayRef.current = null;
+    setIsGifVisible(true);
     void imageRef.current?.startAnimating().catch(() => undefined);
   }, []);
 
-  const source = Platform.OS === 'web' && !webIsPlaying
-    ? assets.idle
-    : assets.animation;
-
   return (
-    <Image
-      key={`${character}-${revision}`}
-      ref={imageRef}
-      source={source}
-      autoplay={Platform.OS === 'web' ? undefined : false}
-      alt={`${assets.name} throwing animation`}
-      allowDownscaling={false}
-      cachePolicy="none"
-      contentFit="fill"
-      onLoad={handleLoad}
-      style={[
-        { width: size, height: size },
-        webPixelatedStyle,
-      ]}
-      transition={0}
-    />
+    <View style={{ width: size, height: size }}>
+      <Image
+        source={assets.idle}
+        alt={`${assets.name} idle`}
+        contentFit="fill"
+        style={[
+          StyleSheet.absoluteFill,
+          { opacity: isPlaying && isGifVisible ? 0 : 1 },
+          webPixelatedStyle,
+        ]}
+      />
+      {isPlaying && (
+        <Image
+          key={`${character}-${revision}`}
+          ref={imageRef}
+          source={assets.animation}
+          autoplay={Platform.OS === 'web' ? undefined : false}
+          alt={`${assets.name} throwing animation`}
+          cachePolicy="memory-disk"
+          contentFit="fill"
+          onLoad={handleLoad}
+          style={[
+            StyleSheet.absoluteFill,
+            { opacity: isGifVisible ? 1 : 0 },
+            webPixelatedStyle,
+          ]}
+          transition={0}
+        />
+      )}
+    </View>
   );
 });
 
